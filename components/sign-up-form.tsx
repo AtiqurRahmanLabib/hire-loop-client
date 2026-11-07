@@ -2,17 +2,25 @@
 
 import { Button } from "@/components/ui/button"
 import { authInputClass } from "@/components/auth-shell"
+import { authClient } from "@/lib/auth-client"
 
 type SignUpData = { name: string; email: string; password: string }
 
 export function SignUpForm() {
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const data = Object.fromEntries(
       new FormData(e.currentTarget)
     ) as unknown as SignUpData
-    // TODO: integrate with better-auth — `authClient.signUp.email(data)`
-    console.log("sign up form data:", data)
+    const { data: signUpData, error } = await authClient.signUp.email({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      callbackURL: "/",
+    })
+    console.log("sign up form data:", signUpData)
+    console.log("sign up form error:", error)
+
   }
 
   return (
