@@ -3,10 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { authInputClass } from "@/components/auth-shell"
 import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 type SignUpData = { name: string; email: string; password: string }
 
 export function SignUpForm() {
+  const router = useRouter()
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const data = Object.fromEntries(
@@ -16,9 +19,13 @@ export function SignUpForm() {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: "/",
+      callbackURL: "/"
     })
-    console.log("sign up form data:", signUpData)
+    if(signUpData){
+      console.log("sign up form data:", signUpData)
+      router.push('/')
+      toast('User Created Succsessfully!')
+    }
     console.log("sign up form error:", error)
 
   }

@@ -2,17 +2,33 @@
 
 import { Button } from "@/components/ui/button"
 import { authInputClass } from "@/components/auth-shell"
+import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 type SignInData = { email: string; password: string }
 
 export function SignInForm() {
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const router = useRouter()
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const data = Object.fromEntries(
       new FormData(e.currentTarget)
     ) as unknown as SignInData
-    // TODO: integrate with better-auth — `authClient.signIn.email(data)`
-    console.log("sign in form data:", data)
+    const { data: singInData, error } = await authClient.signIn.email({
+      email: data.email, // required, The email address of the user.
+      password: data.password, // required, The password of the user. It should be at least 8 characters long and max 128 by default.
+      rememberMe: true, // If false, the user will be signed out when the browser is closed. (optional) (default: true)
+
+    })
+    if (singInData) {
+      toast.success("Wellcome back!")
+      router.push('/')
+      console.log(singInData)
+    }
+    if (error) {
+      toast.error(error.message)
+    }
   }
 
   return (
