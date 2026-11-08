@@ -24,14 +24,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - App Router code lives in `app/`. Path alias `@/*` maps to the **repo root** (not `src/`) — e.g. `@/lib/auth`, `@/components/ui/button`.
 - shadcn/ui: add components with `npx shadcn@latest add <name>`; they land in `components/ui/`. The configured style is `base-nova`, which uses **Base UI (`@base-ui/react`), not Radix** — component APIs may differ from typical shadcn examples. Icons are lucide.
 - Tailwind **v4** with no `tailwind.config.*` — theme tokens are CSS-in-`app/globals.css` (`@theme`). Edit tokens there, not in a config file.
-- Site image assets live in `app/assets/`: `logo.png` (navbar) and `globe.png` — an RGBA canvas containing the whole hero backdrop (starfield, purple corner glows, globe horizon), rendered in `app/page.tsx` behind hero + stats. `cta-bg.png` (white-bg wireframe globe) is still unused.
+- Dashboard lives at `app/dashboard/` (currently just a `recruiter` placeholder page). Its sidebar component `dashboard-sidebar.tsx` is colocated at `app/components/`, not `components/`. Dashboard pages have **no auth/session gating yet**.
+- Site image assets live in `app/assets/`: `logo.png` (navbar + auth pages) and `globe.png` — an RGBA canvas containing the whole hero backdrop (starfield, purple corner glows, globe horizon), rendered in `app/page.tsx` behind hero + stats. `cta-bg.png` is still unused.
 
 ## Auth (better-auth + MongoDB)
 
-- Server config: `lib/auth.ts`; routes mounted at `app/api/auth/[...all]/route.ts` via `toNextJsHandler`. Client: `lib/auth-client.ts` (exports `signIn`, `signUp`, `useSession`).
-- **MongoDB must be running at `mongodb://localhost:27017/database`** — the connection string is hardcoded in `lib/auth.ts`, and `next dev`/`build` fail or break auth without it.
-- Env required in `.env`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`. GitHub social login additionally needs `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` (referenced in `lib/auth.ts`, not yet set in `.env`).
-- `/sign-in` and `/sign-up` pages live in the `app/(auth)/` route group (keep that structure — flat `app/sign-in/` copies collide with it). Forms in `components/sign-in-form.tsx` / `sign-up-form.tsx` only collect form data and `console.log` it; real better-auth integration is a marked `TODO`.
+- Server config: `lib/auth.ts`; routes mounted at `app/api/auth/[...all]/route.ts` via `toNextJsHandler`. Client: `lib/auth-client.ts` (better-auth/react `createAuthClient` with `inferAdditionalFields`, exports `authClient` and `signIn`/`signUp`/`useSession`).
+- DB connection string comes from **`BETTER_AUTH_DB_URL` in `.env`** (MongoDB `MongoClient`, database name `hireLoop`). `next dev`/`build` fail or break auth if it's unreachable.
+- Env required in `.env`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (also used client-side in `lib/auth-client.ts`), `BETTER_AUTH_DB_URL`. GitHub social login additionally needs `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — `socialProviders.github` is configured in `lib/auth.ts` but not yet set in `.env`.
+- User roles: `Seeker | Recruiter | Admin` defined in `lib/roles.ts`. `role` is a better-auth `user.additionalField` (default `"Seeker"`, validated by a custom `StandardSchemaV1` validator in `lib/auth.ts`); the sign-up form passes it explicitly.
+- `/sign-in` and `/sign-up` pages live in the `app/(auth)/` route group (keep that structure — flat `app/sign-in/` copies collide with it). Forms in `components/sign-in-form.tsx` / `sign-up-form.tsx` are wired to `authClient.signIn.email` / `authClient.signUp.email` with sonner toasts and `router.push("/")`.
 
 ## Other
 

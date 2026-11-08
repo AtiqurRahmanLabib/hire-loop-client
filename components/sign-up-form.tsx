@@ -11,14 +11,14 @@ import { toast } from "sonner"
 type SignUpData = { name: string; email: string; password: string }
 
 const roleDescriptions: Record<UserRole, string> = {
-  Seeker: "I'm looking for a job",
-  Recruiter: "I'm hiring",
-  Admin: "Platform administrator",
+  seeker: "I'm looking for a job",
+  recruiter: "I'm hiring",
+  admin: "Platform administrator",
 }
 
 export function SignUpForm() {
   const router = useRouter()
-  const [role, setRole] = useState<UserRole>("Seeker")
+  const [role, setRole] = useState<UserRole>("seeker")
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const data = Object.fromEntries(
@@ -101,7 +101,7 @@ export function SignUpForm() {
                 className="sr-only"
               />
               <span className="block text-sm font-medium text-white">
-                {option}
+                {option.charAt(0).toUpperCase() + option.slice(1)}
               </span>
               <span className="mt-0.5 block text-[11px] leading-tight text-neutral-400">
                 {roleDescriptions[option]}
