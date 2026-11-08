@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 import logo from "@/app/assets/logo.png"
+import { useSession } from "@/lib/auth-client"
 
 const navLinks = [
   { label: "Browse Jobs", href: "#" },
@@ -33,6 +34,7 @@ function SignInLink({ className }: { className?: string }) {
 function GetStartedButton({ className }: { className?: string }) {
   return (
     <Button
+      nativeButton={false}
       render={<Link href="/sign-up" />}
       className={cn(
         "h-10 rounded-lg bg-[#6d5bf5] px-6 text-white hover:bg-[#5c4ae3]",
@@ -45,6 +47,8 @@ function GetStartedButton({ className }: { className?: string }) {
 }
 
 export function SiteNavbar() {
+  const { data: session } = useSession()
+  console.log(session)
   const [open, setOpen] = useState(false)
 
   return (
@@ -76,8 +80,14 @@ export function SiteNavbar() {
             aria-hidden="true"
             className="mx-3 h-5 w-px shrink-0 bg-white/15"
           />
-          <SignInLink className="px-3 py-1.5" />
-          <GetStartedButton className="ml-5" />
+          {session?.user ? (
+            <span>{session.user.name}</span>
+          ) : (
+            <>
+              <SignInLink className="px-3 py-1.5" />
+              <GetStartedButton className="ml-5" />
+            </>
+          )}
         </nav>
 
         {/* Mobile toggle */}
