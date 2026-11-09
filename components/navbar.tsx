@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 import logo from "@/app/assets/logo.png"
-import { useSession } from "@/lib/auth-client"
-
-const navLinks = [
-  { label: "Browse Jobs", href: "#" },
-  { label: "Company", href: "#" },
-  { label: "Pricing", href: "#" },
-]
+import { authClient, useSession } from "@/lib/auth-client"
 
 function SignInLink({ className }: { className?: string }) {
   return (
@@ -49,6 +43,17 @@ function GetStartedButton({ className }: { className?: string }) {
 export function SiteNavbar() {
   const { data: session } = useSession()
   console.log(session)
+
+  const navLinks = [
+    { label: "Browse Jobs", href: "#" },
+    { label: "Company", href: "#" },
+    { label: "Pricing", href: "#" },
+    { label: "Dashboard", href: `/dashboard/${session?.user.role}` },
+  ]
+
+  const handleLogout = async () => {
+    await authClient.signOut()
+  }
   const [open, setOpen] = useState(false)
 
   return (
@@ -81,7 +86,10 @@ export function SiteNavbar() {
             className="mx-3 h-5 w-px shrink-0 bg-white/15"
           />
           {session?.user ? (
-            <span>{session.user.name}</span>
+            <span>
+              {session.user.name}{" "}
+              <button onClick={handleLogout}>logut</button>{" "}
+            </span>
           ) : (
             <>
               <SignInLink className="px-3 py-1.5" />

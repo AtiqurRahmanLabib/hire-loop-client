@@ -5,6 +5,7 @@ import {
   Briefcase,
   FileText,
   LayoutDashboard,
+  PlusCircle,
   Settings,
   Users,
   type LucideIcon,
@@ -63,6 +64,12 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
       name: "Dashboard",
       url: "/dashboard/recruiter",
       icon: LayoutDashboard,
+    },
+    {
+      id: "add-job",
+      name: "Add Job",
+      url: "/dashboard/recruiter/addJobs",
+      icon: PlusCircle,
     },
     {
       id: "manage-jobs",
