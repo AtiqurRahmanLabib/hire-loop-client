@@ -121,7 +121,6 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
 
 export function AppSidebar() {
   const { data: session } = useSession()
-  console.log("SESSION ROLE:", JSON.stringify(session?.user?.role))
   const role: UserRole = session?.user?.role ?? "seeker"
   const items = menuItemsByRole[role]
 

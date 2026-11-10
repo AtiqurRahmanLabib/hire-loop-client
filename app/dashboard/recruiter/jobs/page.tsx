@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button"
 import type { JobsForm } from "../addJobs/page"
 import { getJobs } from "@/lib/api/jobs"
 import { AlertDialoge } from "@/app/components/AlertDialog"
-
+import { getJobStatus } from "@/lib/jobStatus"
+export const dynamic = "force-dynamic"
 /**
  * A table row = the job data we collect from the addJobs form (JobsForm)
  * plus the extra listing metadata (applicants, status, posted date).
@@ -23,7 +24,6 @@ import { AlertDialoge } from "@/app/components/AlertDialog"
 export type JobRow = JobsForm & {
   _id: string
   applicants: number
-  status: "Active" | "Expired"
   posted: string
 }
 
@@ -122,7 +122,8 @@ export default async function ManageJobsPage() {
           </thead>
           <tbody className="divide-y divide-border/60">
             {jobs.map((job) => {
-              const active = job.status === "Active"
+              const status = getJobStatus(job.deadline)
+              const active = status === "Active"
               return (
                 <tr
                   key={job._id}
@@ -194,7 +195,7 @@ export default async function ManageJobsPage() {
                           active ? "bg-emerald-400" : "bg-muted-foreground"
                         }`}
                       />
-                      {job.status}
+                      {status}
                     </span>
                   </td>
 
