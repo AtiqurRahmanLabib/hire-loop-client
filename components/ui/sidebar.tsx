@@ -5,7 +5,7 @@ import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-
+import logo from "@/app/assets/logo.png"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { PanelLeftIcon } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useSession } from "@/lib/auth-client"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -230,7 +233,7 @@ function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
+          "data-[side=left]:group-data-[collapsible=offcanvas]:left-(--sidebar-width)*-1) data-[side=right]:group-data-[collapsible=offcanvas]:right-(--sidebar-width)*-1) fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=right]:right-0 md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
@@ -289,7 +292,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
+        "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-1/2 after:inset-y-0 after:w-0.5 hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full hover:group-data-[collapsible=offcanvas]:bg-sidebar",
@@ -330,13 +333,67 @@ function SidebarInput({
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
+  const { data: session } = useSession()
+
+  // যে ছবির URL লোড ফেইল করেছে সেটা মনে রাখি
+  const [failedImage, setFailedImage] = React.useState<string | null>(null)
+
+  const name = session?.user?.name
+  const image = session?.user?.image
+  const role = session?.user?.role
+
+  // নামের প্রথম অক্ষর, না থাকলে "U"
+  const initial = name?.trim().charAt(0).toUpperCase() || "U"
+
+  // ছবি আছে এবং এই URL আগে ফেইল করেনি
+  const showImage = !!image && failedImage !== image
+
   return (
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
-    />
+    >
+      <Link href="/" aria-label="hireloop home" className="mt-5 shrink-0">
+        <Image
+          src={logo}
+          alt="hireloop"
+          width={154}
+          height={44}
+          priority
+          className="h-8 w-auto sm:h-9"
+        />
+      </Link>
+
+      <div className="mt-5 flex w-56 items-center gap-3 rounded-[8px] border bg-[#141418] p-3">
+        {/* Avatar */}
+        <div className="relative size-9 shrink-0 overflow-hidden rounded-full bg-[#2A2A32]">
+          {showImage ? (
+            <Image
+              src={image}
+              alt={name ?? "User avatar"}
+              fill
+              sizes="36px"
+              className="object-cover"
+              onError={() => setFailedImage(image)}
+            />
+          ) : (
+            <span className="flex size-full items-center justify-center text-[15px] font-semibold text-[#EDEDEF]">
+              {initial}
+            </span>
+          )}
+        </div>
+
+        {/* নাম ও রোল */}
+        <div className="min-w-0">
+          <p className="truncate text-[14px] font-semibold text-[#EDEDEF]">
+            {name}
+          </p>
+          <p className="truncate text-[12px] text-[#A0A0AB]">{role}</p>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -347,7 +404,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
       data-sidebar="footer"
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
-    />
+    ></div>
   )
 }
 
@@ -375,7 +432,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
         className
       )}
       {...props}
-    />
+    ></div>
   )
 }
 
@@ -384,9 +441,9 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-group"
       data-sidebar="group"
-      className={cn("relative  flex w-full min-w-0 flex-col p-2", className)}
+      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
       {...props}
-    />
+    ></div>
   )
 }
 

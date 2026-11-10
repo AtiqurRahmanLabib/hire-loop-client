@@ -16,6 +16,9 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
+import { createJob } from "@/lib/actions/jobs"
+import { useRouter } from "next/navigation"
+import { useSession } from "@/lib/auth-client"
 
 const JOB_CATEGORIES = [
   "Engineering & Tech",
@@ -28,7 +31,7 @@ const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"]
 
 const FREQUENCIES = ["per hour", "per day", "per month", "per year"]
 
-type JobForm = {
+export type JobsForm = {
   jobTitle: string
   companyName: string
   category: string
@@ -43,7 +46,7 @@ type JobForm = {
   requirements: string
 }
 
-const initialForm: JobForm = {
+const initialForm: JobsForm = {
   jobTitle: "",
   companyName: "HirePulse Network",
   category: "Engineering & Tech",
@@ -61,7 +64,10 @@ const initialForm: JobForm = {
 const ACCENT = "border-[#6d5bf5] bg-[#6d5bf5]/15 text-white"
 
 export default function AddJobsPage() {
-  const [form, setForm] = useState<JobForm>(initialForm)
+  const router = useRouter()
+  const { data: session } = useSession()
+  const role = session?.user.role
+  const [form, setForm] = useState<JobsForm>(initialForm)
 
   // One generic handler for every text input / textarea — just set `name` on each field
   function handleChange(
@@ -72,7 +78,7 @@ export default function AddJobsPage() {
   }
 
   // For Select / Switch, which don't fire text-like change events
-  function update<K extends keyof JobForm>(key: K, value: JobForm[K]) {
+  function update<K extends keyof JobsForm>(key: K, value: JobsForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -86,12 +92,17 @@ export default function AddJobsPage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const data = collectFormData()
     console.log("Job form data:", data)
     toast.success("Job listing published!")
     setForm(initialForm)
+    const result = await createJob(data)
+    console.log(result)
+    if (result.insertedId) {
+      router.push(`/dashboard/${role}/jobs`)
+    }
   }
 
   return (
@@ -100,7 +111,8 @@ export default function AddJobsPage() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="mb-2 flex flex-wrap items-center text-xs text-muted-foreground">
-            <Link href={`/dashboard/recruiter/jobs`}> Manage Jobs </Link> <span className="mx-1">›</span>
+            <Link href={`/dashboard/recruiter/jobs`}> Manage Jobs </Link>{" "}
+            <span className="mx-1">›</span>
             <span className="text-[#6d5bf5]">Create New Listing</span>
           </p>
           <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">

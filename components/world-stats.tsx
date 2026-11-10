@@ -27,7 +27,7 @@ export function WorldStats() {
           {stats.map((stat) => (
             <li
               key={stat.label}
-              className="flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5 sm:h-56 lg:h-64"
+              className="flex flex-col justify-between rounded-2xl border border-white/8 bg-linear-to-b from-white/[0.07] to-white/2 p-5 sm:h-56 lg:h-64"
             >
               <span className="text-neutral-400">
                 <stat.icon className="size-4" />

@@ -127,8 +127,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="bg-[#0B0B0C]"/>
-      <SidebarContent className="bg-[#0B0B0C]">
+      <SidebarHeader className="bg-[#0B0B0C] p-2" />
+      <SidebarContent className="-mt-2 bg-[#0B0B0C] p-2">
         <SidebarGroup />
         <SidebarGroup />
         <SidebarMenu>
@@ -142,7 +142,7 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="bg-[#0B0B0C]"/>
+      <SidebarFooter className="bg-[#0B0B0C]" />
     </Sidebar>
   )
 }

@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { LogOut, Menu, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -40,21 +41,64 @@ function GetStartedButton({ className }: { className?: string }) {
   )
 }
 
+function UserAvatar({ name }: { name: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#6d5bf5]/20 text-sm font-semibold text-[#a99bfa] ring-1 ring-[#6d5bf5]/40"
+    >
+      {name.charAt(0).toUpperCase()}
+    </span>
+  )
+}
+
+function LogoutButton({
+  onClick,
+  className,
+}: {
+  onClick: () => void
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/15 px-4 text-sm font-medium text-neutral-200 transition-colors",
+        "hover:border-[#6d5bf5] hover:bg-[#6d5bf5]/10 hover:text-white",
+        "focus-visible:ring-2 focus-visible:ring-[#6d5bf5] focus-visible:outline-none",
+        className
+      )}
+    >
+      <LogOut className="size-4" />
+      Logout
+    </button>
+  )
+}
+
 export function SiteNavbar() {
+  const router = useRouter()
   const { data: session } = useSession()
-  console.log(session)
+  const [open, setOpen] = useState(false)
 
   const navLinks = [
     { label: "Browse Jobs", href: "#" },
     { label: "Company", href: "#" },
     { label: "Pricing", href: "#" },
-    { label: "Dashboard", href: `/dashboard/${session?.user.role}` },
+    { label: "Dashboard", href: `/dashboard/${session?.user?.role ?? ""}` },
   ]
 
   const handleLogout = async () => {
-    await authClient.signOut()
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          setOpen(false)
+          router.push("/")
+          router.refresh()
+        },
+      },
+    })
   }
-  const [open, setOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0b0b0f] text-white">
@@ -86,10 +130,15 @@ export function SiteNavbar() {
             className="mx-3 h-5 w-px shrink-0 bg-white/15"
           />
           {session?.user ? (
-            <span>
-              {session.user.name}{" "}
-              <button onClick={handleLogout}>logut</button>{" "}
-            </span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <UserAvatar name={session.user.name} />
+                <span className="max-w-30 truncate text-sm font-medium text-neutral-200">
+                  {session.user.name}
+                </span>
+              </div>
+              <LogoutButton onClick={handleLogout} />
+            </div>
           ) : (
             <>
               <SignInLink className="px-3 py-1.5" />
@@ -130,10 +179,22 @@ export function SiteNavbar() {
             aria-hidden="true"
             className="my-2 block h-px w-full bg-white/10"
           />
-          <div className="flex items-center justify-between px-3 pt-2">
-            <SignInLink />
-            <GetStartedButton />
-          </div>
+          {session?.user ? (
+            <div className="flex items-center justify-between px-3 pt-2">
+              <div className="flex items-center gap-2">
+                <UserAvatar name={session.user.name} />
+                <span className="max-w-35 truncate text-sm font-medium text-neutral-200">
+                  {session.user.name}
+                </span>
+              </div>
+              <LogoutButton onClick={handleLogout} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-between px-3 pt-2">
+              <SignInLink />
+              <GetStartedButton />
+            </div>
+          )}
         </nav>
       )}
     </header>
