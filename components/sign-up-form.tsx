@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client"
 import { USER_ROLES, type UserRole } from "@/lib/roles"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { toast } from "sonner"
+import { toast } from "@/components/ui/toast"
 
 type SignUpData = { name: string; email: string; password: string }
 
@@ -34,9 +34,16 @@ export function SignUpForm() {
     if (signUpData) {
       console.log("sign up form data:", signUpData)
       router.push("/")
-      toast("User Created Succsessfully!")
+      toast.add({ type: "success", title: "User Created Succsessfully!" })
     }
-    console.log("sign up form error:", error)
+    if (error) {
+      console.log("sign up form error:", error)
+      toast.add({
+        type: "error",
+        title: "Sign up failed",
+        description: error.message ?? "Something went wrong. Please try again.",
+      })
+    }
   }
 
   return (

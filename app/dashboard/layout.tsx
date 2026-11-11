@@ -6,11 +6,15 @@ const DashBoardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="mx-auto w-full bg-[#131314] p-4">
+      {/* <main className="mx-auto w-full bg-[#131314] p-4">
+        <SidebarTrigger />
+        {children}
+      </main> */}
+      <main className="min-w-0 flex-1 bg-[#131314] p-4">
         <SidebarTrigger />
         {children}
       </main>
-        <Toaster />
+      <Toaster />
     </SidebarProvider>
   )
 }

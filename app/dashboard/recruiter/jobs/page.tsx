@@ -1,13 +1,8 @@
 import {
-  BoxesIcon,
-  BriefcaseIcon,
-  CodeIcon,
   EllipsisVerticalIcon,
   GlobeIcon,
   MapPinIcon,
-  MegaphoneIcon,
   PencilIcon,
-  PenToolIcon,
   UsersIcon,
 } from "lucide-react"
 import Link from "next/link"
@@ -16,6 +11,7 @@ import type { JobsForm } from "../addJobs/page"
 import { getJobs } from "@/lib/api/jobs"
 import { AlertDialoge } from "@/app/components/AlertDialog"
 import { getJobStatus } from "@/lib/jobStatus"
+import { CATEGORY_STYLES, DEFAULT_CATEGORY_STYLE } from "@/lib/job-options"
 export const dynamic = "force-dynamic"
 /**
  * A table row = the job data we collect from the addJobs form (JobsForm)
@@ -49,22 +45,8 @@ function deadlineLabel(job: JobsForm) {
   })
 }
 
-// Small tile per category: icon + color
-const categoryStyles: Record<
-  string,
-  { icon: React.ElementType; color: string }
-> = {
-  "Engineering & Tech": { icon: CodeIcon, color: "text-indigo-300" },
-  "Design & Creative": { icon: PenToolIcon, color: "text-orange-400" },
-  Marketing: { icon: MegaphoneIcon, color: "text-rose-300" },
-  "Product & Project": { icon: BoxesIcon, color: "text-teal-300" },
-}
-
 function CategoryBadge({ category }: { category: string }) {
-  const style = categoryStyles[category] ?? {
-    icon: BriefcaseIcon,
-    color: "text-muted-foreground",
-  }
+  const style = CATEGORY_STYLES[category] ?? DEFAULT_CATEGORY_STYLE
   const Icon = style.icon
   return (
     <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
@@ -138,7 +120,7 @@ export default async function ManageJobsPage() {
                           {job.jobTitle}
                         </p>
                         <p
-                          className={`text-xs ${categoryStyles[job.category]?.color ?? "text-muted-foreground"}`}
+                          className={`text-xs ${CATEGORY_STYLES[job.category]?.color ?? "text-muted-foreground"}`}
                         >
                           {job.category}
                         </p>
@@ -227,7 +209,9 @@ export default async function ManageJobsPage() {
                         variant="ghost"
                         className="text-muted-foreground hover:text-destructive"
                       > */}
-                      <AlertDialoge job={job} />
+                      <div className="mx-auto">
+                        <AlertDialoge job={job} />
+                      </div>
                       {/* </Button> */}
                       <Button
                         size="icon"

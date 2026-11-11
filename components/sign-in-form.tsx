@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { authInputClass } from "@/components/auth-shell"
 import { authClient } from "@/lib/auth-client"
-import { toast } from "sonner"
+import { toast } from "@/components/ui/toast"
 import { useRouter } from "next/navigation"
 
 type SignInData = { email: string; password: string }
@@ -22,12 +22,16 @@ export function SignInForm() {
 
     })
     if (singInData) {
-      toast.success("Wellcome back!")
+      toast.add({ type: "success", title: "Wellcome back!" })
       router.push('/')
       console.log(singInData)
     }
     if (error) {
-      toast.error(error.message)
+      toast.add({
+        type: "error",
+        title: "Sign in failed",
+        description: error.message ?? "Something went wrong. Please try again.",
+      })
     }
   }
 

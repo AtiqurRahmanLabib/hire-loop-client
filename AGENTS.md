@@ -33,7 +33,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - DB connection string comes from **`BETTER_AUTH_DB_URL` in `.env`** (MongoDB `MongoClient`, database name `hireLoop`). `next dev`/`build` fail or break auth if it's unreachable.
 - Env required in `.env`: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (also used client-side in `lib/auth-client.ts`), `BETTER_AUTH_DB_URL`. GitHub social login additionally needs `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — `socialProviders.github` is configured in `lib/auth.ts` but not yet set in `.env`.
 - User roles: `Seeker | Recruiter | Admin` defined in `lib/roles.ts`. `role` is a better-auth `user.additionalField` (default `"Seeker"`, validated by a custom `StandardSchemaV1` validator in `lib/auth.ts`); the sign-up form passes it explicitly.
-- `/sign-in` and `/sign-up` pages live in the `app/(auth)/` route group (keep that structure — flat `app/sign-in/` copies collide with it). Forms in `components/sign-in-form.tsx` / `sign-up-form.tsx` are wired to `authClient.signIn.email` / `authClient.signUp.email` with sonner toasts and `router.push("/")`.
+- `/sign-in` and `/sign-up` pages live in the `app/(auth)/` route group (keep that structure — flat `app/sign-in/` copies collide with it). Forms in `components/sign-in-form.tsx` / `sign-up-form.tsx` are wired to `authClient.signIn.email` / `authClient.signUp.email` with shadcn toasts (`@/components/ui/toast`, Base UI `toast.add(...)`) and `router.push("/")`.
 
 ## Other
 

@@ -82,7 +82,7 @@ export function SiteNavbar() {
   const [open, setOpen] = useState(false)
 
   const navLinks = [
-    { label: "Browse Jobs", href: "#" },
+    { label: "Browse Jobs", href: "/browse-jobs" },
     { label: "Company", href: "#" },
     { label: "Pricing", href: "#" },
     { label: "Dashboard", href: `/dashboard/${session?.user?.role ?? ""}` },
@@ -101,8 +101,8 @@ export function SiteNavbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#0b0b0f] text-white">
-      <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full bg-[#08080A] text-white">
+      <div className="mx-auto flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="hireloop home" className="shrink-0">
           <Image
             src={logo}

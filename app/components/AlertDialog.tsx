@@ -36,6 +36,7 @@ export function AlertDialoge({ job }: { job: JobRow }) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
+      className=""
         render={
           <Button variant="destructive">
             <Trash2Icon className="size-4" />
@@ -45,7 +46,7 @@ export function AlertDialoge({ job }: { job: JobRow }) {
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-            <Trash2Icon />
+            <Trash2Icon/>
           </AlertDialogMedia>
           {/* <AlertDialogTrigger render={<Button variant="destructive" />}>
             Delete

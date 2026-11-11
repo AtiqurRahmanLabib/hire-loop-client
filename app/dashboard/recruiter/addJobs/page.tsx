@@ -2,7 +2,7 @@
 
 import { BuildingIcon, CalendarIcon, GlobeIcon, MapPinIcon } from "lucide-react"
 import { useState } from "react"
-import { toast } from "sonner"
+import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,17 +19,7 @@ import Link from "next/link"
 import { createJob } from "@/lib/actions/jobs"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth-client"
-
-const JOB_CATEGORIES = [
-  "Engineering & Tech",
-  "Design & Creative",
-  "Marketing",
-  "Product & Project",
-]
-
-const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"]
-
-const FREQUENCIES = ["per hour", "per day", "per month", "per year"]
+import { FREQUENCIES, JOB_CATEGORIES, JOB_TYPES } from "@/lib/job-options"
 
 export type JobsForm = {
   jobTitle: string
@@ -96,12 +86,12 @@ export default function AddJobsPage() {
     e.preventDefault()
     const data = collectFormData()
     console.log("Job form data:", data)
-    toast.success("Job listing published!")
+    toast.add({ type: "success", title: "Job listing published!" })
     setForm(initialForm)
     const result = await createJob(data)
     console.log(result)
     if (result.insertedId) {
-      router.push(`/dashboard/${role}/jobs`)
+      router.push(`/dashboard/recruiter/jobs`)
     }
   }
 

@@ -9,9 +9,9 @@ export function Hero() {
       <div className="relative flex items-center justify-center gap-4">
         <span
           aria-hidden="true"
-          className="hidden h-px w-16 bg-gradient-to-r from-transparent to-white/25 sm:block"
+          className="hidden h-px w-16 bg-linear-to-r from-transparent to-white/25 sm:block"
         />
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pr-4 pl-1.5">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 py-1.5 pr-4 pl-1.5">
           <span className="inline-flex size-6 items-center justify-center rounded-md bg-[#f97316]/15">
             <Flame className="size-3.5 text-[#f97316]" />
           </span>
@@ -22,7 +22,7 @@ export function Hero() {
         </span>
         <span
           aria-hidden="true"
-          className="hidden h-px w-16 bg-gradient-to-l from-transparent to-white/25 sm:block"
+          className="hidden h-px w-16 bg-linear-to-l from-transparent to-white/25 sm:block"
         />
       </div>
 
@@ -75,7 +75,7 @@ export function Hero() {
           <Link
             key={t}
             href="#"
-            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="rounded-full border border-white/10 bg-white/4 px-3 py-1 text-xs text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
           >
             {t}
           </Link>
