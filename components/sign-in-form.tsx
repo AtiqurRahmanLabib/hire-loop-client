@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button"
 import { authInputClass } from "@/components/auth-shell"
 import { authClient } from "@/lib/auth-client"
 import { toast } from "@/components/ui/toast"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 type SignInData = { email: string; password: string }
 
 export function SignInForm() {
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirectTo") ?? "/"
   const router = useRouter()
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -19,11 +21,10 @@ export function SignInForm() {
       email: data.email, // required, The email address of the user.
       password: data.password, // required, The password of the user. It should be at least 8 characters long and max 128 by default.
       rememberMe: true, // If false, the user will be signed out when the browser is closed. (optional) (default: true)
-
     })
     if (singInData) {
       toast.add({ type: "success", title: "Wellcome back!" })
-      router.push('/')
+      router.push(redirectTo)
       console.log(singInData)
     }
     if (error) {

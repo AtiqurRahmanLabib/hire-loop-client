@@ -12,6 +12,8 @@ import { getJobs } from "@/lib/api/jobs"
 import { AlertDialoge } from "@/app/components/AlertDialog"
 import { getJobStatus } from "@/lib/jobStatus"
 import { CATEGORY_STYLES, DEFAULT_CATEGORY_STYLE } from "@/lib/job-options"
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
 export const dynamic = "force-dynamic"
 /**
  * A table row = the job data we collect from the addJobs form (JobsForm)
@@ -60,7 +62,10 @@ const thClass =
 const tdClass = "px-4 py-4 align-middle whitespace-nowrap"
 
 export default async function ManageJobsPage() {
-  const jobs: JobRow[] = await getJobs()
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+  const jobs: JobRow[] = await getJobs(`recruiterId=${session?.user.id}`)
   return (
     <div className="p-6">
       {/* Header */}
@@ -157,10 +162,13 @@ export default async function ManageJobsPage() {
 
                   {/* Applicants */}
                   <td className={tdClass}>
-                    <div className="flex items-center gap-2 text-sm font-medium text-[#6d5bf5]">
+                    <Link
+                      href={`/dashboard/recruiter/jobs/${job._id}/applications`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-[#6d5bf5] transition-colors hover:text-[#5c4ae3] hover:underline"
+                    >
                       <UsersIcon className="size-4" />
-                      {job.applicants} Candidates
-                    </div>
+                      View applications
+                    </Link>
                   </td>
 
                   {/* Status */}

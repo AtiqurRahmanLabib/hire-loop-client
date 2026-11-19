@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { authInputClass } from "@/components/auth-shell"
 import { authClient } from "@/lib/auth-client"
 import { USER_ROLES, type UserRole } from "@/lib/roles"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { toast } from "@/components/ui/toast"
 
@@ -17,6 +17,8 @@ const roleDescriptions: Record<UserRole, string> = {
 }
 
 export function SignUpForm() {
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get("redirectTo") ?? "/"
   const router = useRouter()
   const [role, setRole] = useState<UserRole>("seeker")
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -29,11 +31,11 @@ export function SignUpForm() {
       email: data.email,
       password: data.password,
       role,
-      callbackURL: "/",
+      callbackURL: redirectTo,
     })
     if (signUpData) {
       console.log("sign up form data:", signUpData)
-      router.push("/")
+      router.push(redirectTo)
       toast.add({ type: "success", title: "User Created Succsessfully!" })
     }
     if (error) {

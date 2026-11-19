@@ -84,7 +84,7 @@ export function SiteNavbar() {
   const navLinks = [
     { label: "Browse Jobs", href: "/browse-jobs" },
     { label: "Company", href: "#" },
-    { label: "Pricing", href: "#" },
+    { label: "Pricing", href: "/payment" },
     { label: "Dashboard", href: `/dashboard/${session?.user?.role ?? ""}` },
   ]
 

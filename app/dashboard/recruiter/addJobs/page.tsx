@@ -1,7 +1,8 @@
 "use client"
 
 import { BuildingIcon, CalendarIcon, GlobeIcon, MapPinIcon } from "lucide-react"
-import { useState } from "react"
+
+import { useEffect, useState } from "react"
 import { toast } from "@/components/ui/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,12 +19,14 @@ import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { createJob } from "@/lib/actions/jobs"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/auth-client"
 import { FREQUENCIES, JOB_CATEGORIES, JOB_TYPES } from "@/lib/job-options"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import { useSession } from "@/lib/auth-client"
 
 export type JobsForm = {
   jobTitle: string
   companyName: string
+  recruiterId: string
   category: string
   jobType: string
   isRemote: boolean
@@ -36,9 +39,12 @@ export type JobsForm = {
   requirements: string
 }
 
-const initialForm: JobsForm = {
+const ACCENT = "border-[#6d5bf5] bg-[#6d5bf5]/15 text-white"
+
+const getInitialForm = (recruiterId = ""): JobsForm => ({
   jobTitle: "",
   companyName: "HirePulse Network",
+  recruiterId,
   category: "Engineering & Tech",
   jobType: "Full-time",
   isRemote: true,
@@ -49,75 +55,163 @@ const initialForm: JobsForm = {
   frequency: "per hour",
   responsibilities: "",
   requirements: "",
-}
-
-const ACCENT = "border-[#6d5bf5] bg-[#6d5bf5]/15 text-white"
+})
 
 export default function AddJobsPage() {
-  const router = useRouter()
   const { data: session } = useSession()
-  const role = session?.user.role
-  const [form, setForm] = useState<JobsForm>(initialForm)
+  const router = useRouter()
 
-  // One generic handler for every text input / textarea — just set `name` on each field
+  const [form, setForm] = useState<JobsForm>(() =>
+    getInitialForm(session?.user.id ?? "")
+  )
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Update recruiterId when session becomes available
+  useEffect(() => {
+    if (session?.user.id) {
+      setForm((prev) => ({
+        ...prev,
+        recruiterId: session.user.id,
+      }))
+    }
+  }, [session?.user.id])
+
+  // Generic handler for text inputs and textareas
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
-  // For Select / Switch, which don't fire text-like change events
+  // Handler for Select and Switch
   function update<K extends keyof JobsForm>(key: K, value: JobsForm[K]) {
-    setForm((prev) => ({ ...prev, [key]: value }))
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
   }
 
-  // Collects the whole form data in one place (called on publish)
+  // Collect form data
   function collectFormData() {
     return {
       ...form,
       jobTitle: form.jobTitle.trim(),
+      companyName: form.companyName.trim(),
+      location: form.location.trim(),
       responsibilities: form.responsibilities.trim(),
       requirements: form.requirements.trim(),
+      minSalary: form.minSalary ? Number(form.minSalary) : null,
+      maxSalary: form.maxSalary ? Number(form.maxSalary) : null,
     }
   }
 
+  // Submit form
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const data = collectFormData()
-    console.log("Job form data:", data)
-    toast.add({ type: "success", title: "Job listing published!" })
-    setForm(initialForm)
-    const result = await createJob(data)
-    console.log(result)
-    if (result.insertedId) {
-      router.push(`/dashboard/recruiter/jobs`)
+
+    if (isSubmitting) return
+
+    // Validate recruiter session
+    if (!session?.user.id) {
+      toast.add({
+        type: "error",
+        title: "Please login before publishing a job!",
+      })
+      return
+    }
+
+    // Validate salary range
+    if (
+      form.minSalary &&
+      form.maxSalary &&
+      Number(form.maxSalary) < Number(form.minSalary)
+    ) {
+      toast.add({
+        type: "error",
+        title: "Maximum salary cannot be lower than minimum salary!",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const data = {
+        ...collectFormData(),
+        recruiterId: session.user.id,
+      }
+
+      console.log("Job form data:", data)
+
+      const result = await createJob(data)
+
+      console.log("Create job result:", result)
+
+      if (result?.insertedId) {
+        toast.add({
+          type: "success",
+          title: "Job listing published!",
+        })
+
+        // Reset form after successful insertion
+        setForm(getInitialForm(session.user.id))
+
+        router.push("/dashboard/recruiter/jobs")
+      } else {
+        toast.add({
+          type: "error",
+          title: "Failed to publish job!",
+        })
+      }
+    } catch (error) {
+      console.error("Job creation error:", error)
+
+      toast.add({
+        type: "error",
+        title: "Something went wrong while publishing!",
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="w-full p-4 sm:p-6 lg:p-8">
+      <SidebarTrigger className="-ml-2 text-zinc-400 hover:text-zinc-100" />
+
       {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-2 mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="mb-2 flex flex-wrap items-center text-xs text-muted-foreground">
-            <Link href={`/dashboard/recruiter/jobs`}> Manage Jobs </Link>{" "}
+            <Link href="/dashboard/recruiter/jobs">Manage Jobs</Link>
+
             <span className="mx-1">›</span>
+
             <span className="text-[#6d5bf5]">Create New Listing</span>
           </p>
+
           <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">
             Post a New Job
           </h1>
+
           <p className="mt-1 text-sm text-muted-foreground">
             Fill in the position specifications to attract qualified talent
             across our network.
           </p>
         </div>
+
         <Button
           type="submit"
+          disabled={isSubmitting}
           className="hidden h-10 gap-2 rounded-lg bg-[#6d5bf5] px-5 text-white hover:bg-[#5c4ae3] sm:inline-flex"
         >
-          Publish Job →
+          {isSubmitting ? "Publishing..." : "Publish Job →"}
         </Button>
       </div>
 
@@ -132,6 +226,7 @@ export default function AddJobsPage() {
             <Label htmlFor="jobTitle">
               Job Title <span className="text-[#6d5bf5]">*</span>
             </Label>
+
             <Input
               id="jobTitle"
               name="jobTitle"
@@ -148,8 +243,10 @@ export default function AddJobsPage() {
               <Label htmlFor="companyName">
                 Company Name <span className="text-[#6d5bf5]">*</span>
               </Label>
+
               <div className="relative">
                 <BuildingIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+
                 <Input
                   id="companyName"
                   name="companyName"
@@ -160,18 +257,24 @@ export default function AddJobsPage() {
                 />
               </div>
             </div>
+
             <div className="min-w-0 space-y-1.5">
               <Label>
                 Job Category <span className="text-[#6d5bf5]">*</span>
               </Label>
+
               <Select
-                items={JOB_CATEGORIES.map((label) => ({ value: label, label }))}
+                items={JOB_CATEGORIES.map((label) => ({
+                  value: label,
+                  label,
+                }))}
                 value={form.category}
                 onValueChange={(value) => update("category", value as string)}
               >
                 <SelectTrigger className="h-10 w-full">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
+
                 <SelectContent>
                   {JOB_CATEGORIES.map((category) => (
                     <SelectItem key={category} value={category}>
@@ -187,6 +290,7 @@ export default function AddJobsPage() {
             <Label>
               Job Type <span className="text-[#6d5bf5]">*</span>
             </Label>
+
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {JOB_TYPES.map((type) => (
                 <button
@@ -218,29 +322,32 @@ export default function AddJobsPage() {
               <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
                 <GlobeIcon className="size-4 text-primary" />
               </div>
+
               <div className="min-w-0">
                 <p className="text-sm font-medium">
                   Remote Work Allowed (IsRemote)
                 </p>
+
                 <p className="text-xs text-muted-foreground">
                   Enable worldwide or distributed candidate applications
                 </p>
               </div>
             </div>
+
             <Switch
               className="shrink-0"
               checked={form.isRemote}
-              onCheckedChange={(checked) =>
-                update("isRemote", checked as boolean)
-              }
+              onCheckedChange={(checked) => update("isRemote", checked)}
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="min-w-0 space-y-1.5">
               <Label htmlFor="location">Job Location (location)</Label>
+
               <div className="relative">
                 <MapPinIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+
                 <Input
                   id="location"
                   name="location"
@@ -250,10 +357,13 @@ export default function AddJobsPage() {
                 />
               </div>
             </div>
+
             <div className="min-w-0 space-y-1.5">
               <Label htmlFor="deadline">Application Deadline (deadline)</Label>
+
               <div className="relative">
                 <CalendarIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+
                 <Input
                   id="deadline"
                   name="deadline"
@@ -269,6 +379,7 @@ export default function AddJobsPage() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="min-w-0 space-y-1.5">
               <Label htmlFor="minSalary">Min Salary / Rate</Label>
+
               <Input
                 id="minSalary"
                 name="minSalary"
@@ -280,8 +391,10 @@ export default function AddJobsPage() {
                 onChange={handleChange}
               />
             </div>
+
             <div className="min-w-0 space-y-1.5">
               <Label htmlFor="maxSalary">Max Salary / Rate</Label>
+
               <Input
                 id="maxSalary"
                 name="maxSalary"
@@ -293,16 +406,22 @@ export default function AddJobsPage() {
                 onChange={handleChange}
               />
             </div>
+
             <div className="col-span-2 min-w-0 space-y-1.5 sm:col-span-1">
               <Label>Frequency</Label>
+
               <Select
-                items={FREQUENCIES.map((label) => ({ value: label, label }))}
+                items={FREQUENCIES.map((label) => ({
+                  value: label,
+                  label,
+                }))}
                 value={form.frequency}
                 onValueChange={(value) => update("frequency", value as string)}
               >
                 <SelectTrigger className="h-10 w-full">
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
+
                 <SelectContent>
                   {FREQUENCIES.map((frequency) => (
                     <SelectItem key={frequency} value={frequency}>
@@ -326,6 +445,7 @@ export default function AddJobsPage() {
             <Label htmlFor="responsibilities">
               Key Responsibilities <span className="text-[#6d5bf5]">*</span>
             </Label>
+
             <Textarea
               id="responsibilities"
               name="responsibilities"
@@ -343,6 +463,7 @@ export default function AddJobsPage() {
               Qualifications &amp; Requirements{" "}
               <span className="text-[#6d5bf5]">*</span>
             </Label>
+
             <Textarea
               id="requirements"
               name="requirements"
@@ -363,9 +484,10 @@ export default function AddJobsPage() {
       <div className="sticky bottom-0 -mx-4 mt-6 border-t border-border bg-background/95 p-4 backdrop-blur sm:hidden">
         <Button
           type="submit"
+          disabled={isSubmitting}
           className="h-11 w-full rounded-lg bg-[#6d5bf5] text-white hover:bg-[#5c4ae3]"
         >
-          Publish Job →
+          {isSubmitting ? "Publishing..." : "Publish Job →"}
         </Button>
       </div>
     </form>
